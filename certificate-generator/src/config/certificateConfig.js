@@ -1,0 +1,144 @@
+/**
+ * Certificate Configuration
+ *
+ * All page dimensions and field coordinates are in PDF points (pts).
+ * PDF coordinate origin (0,0) is at the BOTTOM-LEFT of the page.
+ * Y increases upward.
+ *
+ * Template: ICET-AIDCDC-2026.pdf
+ * Page size: 790.5 x 1119 pts (Portrait)
+ * Source: Canva-generated PDF, verified via pdfinfo
+ *
+ * Dynamic field positions & styling are calibrated to exactly match
+ * sample-needed-output.pdf:
+ * - Font: Times-Bold (Times New Roman Bold serif) for an attractive, prestigious certificate look
+ * - Color: Deep Royal Navy Blue rgb(15, 15, 150)
+ * - Alignment: Centered text horizontally on each respective line
+ * - Y Baselines: Adjusted so characters sit cleanly above the underlines
+ */
+
+export const TEMPLATE_PATH = '/templates/ICET-AIDCDC-2026.pdf';
+
+export const PAGE = {
+  width: 790.5,
+  height: 1119,
+};
+
+/**
+ * Standard font definitions.
+ * All dynamic fields use Times-Bold matching sample-needed-output.pdf.
+ */
+export const FONTS = {
+  TIMES_BOLD: 'Times-Bold',
+  TIMES_ROMAN: 'Times-Roman',
+  HELVETICA: 'Helvetica',
+  HELVETICA_BOLD: 'Helvetica-Bold',
+};
+
+/**
+ * Deep Royal Navy Blue matching sample-needed-output.pdf
+ * RGB [15, 15, 150] -> in 0..1 scale { r: 15/255, g: 15/255, b: 150/255 }
+ */
+export const CERTIFICATE_TEXT_COLOR = {
+  r: 15 / 255,
+  g: 15 / 255,
+  b: 150 / 255,
+};
+
+/**
+ * Certificate field definitions with coordinates, font settings, and constraints.
+ *
+ * Exact calibration against sample-needed-output.pdf:
+ *
+ * 1. Recipient Name:
+ *    - Text: e.g. "Kishor Raj SA"
+ *    - Font: Times-Bold, 22pt
+ *    - Color: Deep Royal Navy Blue
+ *    - Alignment: Centered on underline (center X ≈ 412)
+ *    - Y Baseline: y = 638 (sits cleanly above underline at y ≈ 625)
+ *
+ * 2. Affiliation:
+ *    - Text: e.g. "Government Arts and Science College Veerapandi"
+ *    - Font: Times-Bold, 17pt
+ *    - Color: Deep Royal Navy Blue
+ *    - Alignment: Centered in available space of 'of' line (center X ≈ 418)
+ *    - Y Baseline: y = 608 (sits cleanly above underline at y ≈ 595)
+ *
+ * 3. Paper / Presentation Title:
+ *    - Text: e.g. "Deep Learning and Machine Learning"
+ *    - Font: Times-Bold, 21pt
+ *    - Color: Deep Royal Navy Blue
+ *    - Alignment: Centered across page (center X = 395.25)
+ *    - Y Baseline: y = 547 (sits cleanly above title underline at y ≈ 533)
+ *    - Line Height: 30pt (matches the 30pt spacing between consecutive title underlines)
+ */
+export const FIELDS = {
+  recipientName: {
+    x: 412,
+    y: 638,
+    maxWidth: 480,
+    fontSize: 22,
+    minFontSize: 12,
+    fontFamily: FONTS.TIMES_BOLD,
+    color: CERTIFICATE_TEXT_COLOR,
+    align: 'center',
+    maxLines: 1,
+  },
+
+  affiliation: {
+    x: 418,
+    y: 608,
+    maxWidth: 540,
+    fontSize: 17,
+    minFontSize: 10,
+    fontFamily: FONTS.TIMES_BOLD,
+    color: CERTIFICATE_TEXT_COLOR,
+    align: 'center',
+    maxLines: 2,
+    lineHeight: 24,
+  },
+
+  paperTitle: {
+    x: 395.25,
+    y: 547,
+    maxWidth: 550,
+    fontSize: 21,
+    minFontSize: 11,
+    fontFamily: FONTS.TIMES_BOLD,
+    color: CERTIFICATE_TEXT_COLOR,
+    align: 'center',
+    maxLines: 2,
+    lineHeight: 30,
+    bottomBoundary: 490,
+  },
+};
+
+/**
+ * Validation constraints.
+ */
+export const VALIDATION = {
+  recipientName: {
+    required: true,
+    maxLength: 100,
+    label: 'Full Name',
+  },
+  affiliation: {
+    required: true,
+    maxLength: 150,
+    label: 'Affiliation',
+  },
+  paperTitle: {
+    required: true,
+    maxLength: 250,
+    label: 'Paper / Presentation Title',
+  },
+};
+
+/**
+ * Initial application form state.
+ */
+export const INITIAL_FORM_STATE = {
+  recipientName: '',
+  affiliation: '',
+  paperTitle: '',
+};
