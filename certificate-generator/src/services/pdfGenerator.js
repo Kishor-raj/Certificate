@@ -4,7 +4,8 @@
  * Generates the final certificate PDF by:
  * 1. Loading a fresh copy of the template.
  * 2. Embedding dynamic text at exact coordinates matching sample-needed-output.pdf.
- * 3. Returning PDF bytes for download.
+ * 3. Applying custom font-size adjustments while safely handling auto-fit.
+ * 4. Returning PDF bytes for download.
  *
  * Exact styling matching sample-needed-output.pdf:
  *   - Recipient Name: Times-Bold, centered on underline, Deep Royal Navy Blue
@@ -16,7 +17,7 @@
 
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { getFreshTemplateCopy } from './templateLoader.js';
-import { FIELDS, PAGE } from '../config/certificateConfig.js';
+import { FIELDS, PAGE, DEFAULT_FONT_SIZES } from '../config/certificateConfig.js';
 import { sanitizeForPdf } from '../utils/textSanitizer.js';
 import { fitTextToWidth, fitMultilineText } from '../utils/textFit.js';
 import { buildCertificateFilename } from '../utils/fileName.js';
@@ -50,10 +51,11 @@ function drawText(page, font, text, x, y, fontSize, color) {
  * @param {string} certData.recipientName - Full name (e.g. "Kishor Raj SA")
  * @param {string} certData.affiliation
  * @param {string} certData.paperTitle
+ * @param {object} [fontSizes] - Optional custom font sizes { recipientName, affiliation, paperTitle }
  *
  * @returns {Promise<{ bytes: Uint8Array, filename: string }>}
  */
-export async function generateCertificate(certData) {
+export async function generateCertificate(certData, fontSizes = DEFAULT_FONT_SIZES) {
   // 1. Fresh, unmodified copy of template
   const templateBytes = await getFreshTemplateCopy();
 
@@ -86,11 +88,12 @@ export async function generateCertificate(certData) {
 
   // ── 6. Recipient Name — centered, Times-Bold, Deep Navy Blue ─────────────
   const nameConfig = FIELDS.recipientName;
+  const preferredNameSize = fontSizes?.recipientName || nameConfig.fontSize;
 
   const nameFit = fitTextToWidth(
     recipientName,
     nameConfig.maxWidth,
-    nameConfig.fontSize,
+    preferredNameSize,
     nameConfig.minFontSize,
     'Times-Bold',
     true,
@@ -113,11 +116,12 @@ export async function generateCertificate(certData) {
 
   // ── 7. Affiliation — centered, Times-Bold, Deep Navy Blue ────────────────
   const affConfig = FIELDS.affiliation;
+  const preferredAffSize = fontSizes?.affiliation || affConfig.fontSize;
 
   const affSingleFit = fitTextToWidth(
     affiliation,
     affConfig.maxWidth,
-    affConfig.fontSize,
+    preferredAffSize,
     affConfig.minFontSize,
     'Times-Bold',
     true,
@@ -133,7 +137,7 @@ export async function generateCertificate(certData) {
       affiliation,
       affConfig.maxWidth,
       affConfig.maxLines,
-      affConfig.fontSize,
+      preferredAffSize,
       affConfig.minFontSize,
       'Times-Bold',
       true,
@@ -149,12 +153,13 @@ export async function generateCertificate(certData) {
 
   // ── 8. Paper Title — centered, Times-Bold, Deep Navy Blue ────────────────
   const titleConfig = FIELDS.paperTitle;
+  const preferredTitleSize = fontSizes?.paperTitle || titleConfig.fontSize;
 
   const titleFit = fitMultilineText(
     paperTitle,
     titleConfig.maxWidth,
     titleConfig.maxLines,
-    titleConfig.fontSize,
+    preferredTitleSize,
     titleConfig.minFontSize,
     'Times-Bold',
     true,

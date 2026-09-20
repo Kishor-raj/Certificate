@@ -1,7 +1,8 @@
 /**
  * TextArea Component
  *
- * Accessible multi-line textarea for the paper/presentation title.
+ * Accessible multi-line textarea for the paper/presentation title,
+ * supporting optional header controls (such as font size adjusters).
  */
 import ValidationMessage from './ValidationMessage.jsx';
 
@@ -17,13 +18,14 @@ export default function TextArea({
   maxLength,
   rows = 3,
   required = true,
+  extraHeader,
 }) {
   const errorId = `${id}-error`;
   const countId = `${id}-count`;
 
   return (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between">
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <label
           htmlFor={id}
           className="block text-sm font-semibold text-gray-700"
@@ -33,11 +35,15 @@ export default function TextArea({
             <span className="text-red-500" aria-label="required">*</span>
           )}
         </label>
-        {maxLength && (
-          <span id={countId} className="text-xs text-gray-400" aria-live="polite">
-            {value.length}/{maxLength}
-          </span>
-        )}
+
+        <div className="flex items-center gap-2">
+          {extraHeader}
+          {maxLength && (
+            <span id={countId} className="text-xs text-gray-400" aria-live="polite">
+              {value.length}/{maxLength}
+            </span>
+          )}
+        </div>
       </div>
 
       <textarea

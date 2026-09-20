@@ -114,6 +114,39 @@ export const FIELDS = {
 };
 
 /**
+ * Default font sizes for dynamic fields.
+ */
+export const DEFAULT_FONT_SIZES = {
+  recipientName: FIELDS.recipientName.fontSize,
+  affiliation: FIELDS.affiliation.fontSize,
+  paperTitle: FIELDS.paperTitle.fontSize,
+};
+
+/**
+ * Permitted font size limits for user adjustment.
+ */
+export const FONT_SIZE_LIMITS = {
+  recipientName: {
+    min: 14,
+    max: 32,
+    step: 1,
+    default: FIELDS.recipientName.fontSize,
+  },
+  affiliation: {
+    min: 11,
+    max: 24,
+    step: 1,
+    default: FIELDS.affiliation.fontSize,
+  },
+  paperTitle: {
+    min: 13,
+    max: 28,
+    step: 1,
+    default: FIELDS.paperTitle.fontSize,
+  },
+};
+
+/**
  * Validation constraints.
  */
 export const VALIDATION = {

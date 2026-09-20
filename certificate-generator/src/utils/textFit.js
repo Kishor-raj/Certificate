@@ -3,7 +3,8 @@
  *
  * Measures text and determines the appropriate font size so that text
  * fits within a given width/height constraint.
- * Supports Canvas 2D measurement in the browser, or a custom measure function (e.g. from pdf-lib).
+ * Supports Canvas 2D measurement in the browser, custom measure function (e.g. from pdf-lib),
+ * or analytical fallback in headless/Node/jsdom environments.
  */
 
 /**
@@ -13,7 +14,11 @@
 let _canvas = null;
 function getMeasureCanvas() {
   if (!_canvas && typeof document !== 'undefined') {
-    _canvas = document.createElement('canvas');
+    try {
+      _canvas = document.createElement('canvas');
+    } catch {
+      _canvas = null;
+    }
   }
   return _canvas;
 }
@@ -36,10 +41,16 @@ export function measureTextWidth(text, fontSize, fontFamily = 'Helvetica, Arial,
 
   const canvas = getMeasureCanvas();
   if (canvas) {
-    const ctx = canvas.getContext('2d');
-    const weight = bold ? 'bold' : 'normal';
-    ctx.font = `${weight} ${fontSize}px ${fontFamily}`;
-    return ctx.measureText(text).width;
+    try {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        const weight = bold ? 'bold' : 'normal';
+        ctx.font = `${weight} ${fontSize}px ${fontFamily}`;
+        return ctx.measureText(text).width;
+      }
+    } catch {
+      // Ignore and fallback below
+    }
   }
 
   // Fallback average character width factor (~0.55 of font size for proportional serif/sans)

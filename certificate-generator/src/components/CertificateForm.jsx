@@ -1,16 +1,26 @@
 /**
  * CertificateForm Component
  *
- * The main certificate input form with three dynamic fields matching sample-needed-output.pdf:
+ * The main certificate input form with three dynamic fields:
  * - Full Name (e.g. "Kishor Raj SA")
  * - Affiliation (e.g. "Government Arts and Science College Veerapandi")
  * - Paper / Presentation Title (e.g. "Deep Learning and Machine Learning")
+ *
+ * Each field features interactive font-size adjustment controls.
  */
 import TextInput from './TextInput.jsx';
 import TextArea from './TextArea.jsx';
-import { VALIDATION } from '../config/certificateConfig.js';
+import FontSizeControl from './FontSizeControl.jsx';
+import { VALIDATION, FONT_SIZE_LIMITS } from '../config/certificateConfig.js';
 
-export default function CertificateForm({ formData, errors, onChange, disabled }) {
+export default function CertificateForm({
+  formData,
+  errors,
+  onChange,
+  fontSizes,
+  onFontSizeChange,
+  disabled,
+}) {
   return (
     <div className="space-y-5">
       {/* Full Name */}
@@ -25,6 +35,15 @@ export default function CertificateForm({ formData, errors, onChange, disabled }
         placeholder="e.g. Kishor Raj SA"
         maxLength={VALIDATION.recipientName.maxLength}
         required
+        extraHeader={
+          <FontSizeControl
+            field="recipientName"
+            fontSize={fontSizes.recipientName}
+            limits={FONT_SIZE_LIMITS.recipientName}
+            onChange={onFontSizeChange}
+            disabled={disabled}
+          />
+        }
       />
 
       {/* Affiliation */}
@@ -39,6 +58,15 @@ export default function CertificateForm({ formData, errors, onChange, disabled }
         placeholder="e.g. Government Arts and Science College Veerapandi"
         maxLength={VALIDATION.affiliation.maxLength}
         required
+        extraHeader={
+          <FontSizeControl
+            field="affiliation"
+            fontSize={fontSizes.affiliation}
+            limits={FONT_SIZE_LIMITS.affiliation}
+            onChange={onFontSizeChange}
+            disabled={disabled}
+          />
+        }
       />
 
       {/* Paper / Presentation Title */}
@@ -54,6 +82,15 @@ export default function CertificateForm({ formData, errors, onChange, disabled }
         maxLength={VALIDATION.paperTitle.maxLength}
         rows={3}
         required
+        extraHeader={
+          <FontSizeControl
+            field="paperTitle"
+            fontSize={fontSizes.paperTitle}
+            limits={FONT_SIZE_LIMITS.paperTitle}
+            onChange={onFontSizeChange}
+            disabled={disabled}
+          />
+        }
       />
     </div>
   );

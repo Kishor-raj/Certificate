@@ -1,7 +1,8 @@
 /**
  * TextInput Component
  *
- * Accessible single-line text input for recipient name and affiliation.
+ * Accessible single-line text input for recipient name and affiliation,
+ * supporting optional header controls (such as font size adjusters).
  */
 import ValidationMessage from './ValidationMessage.jsx';
 
@@ -17,6 +18,7 @@ export default function TextInput({
   maxLength,
   required = true,
   hint,
+  extraHeader,
 }) {
   const errorId = `${id}-error`;
   const hintId  = `${id}-hint`;
@@ -29,8 +31,8 @@ export default function TextInput({
   ].filter(Boolean).join(' ') || undefined;
 
   return (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between">
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <label
           htmlFor={id}
           className="block text-sm font-semibold text-gray-700"
@@ -40,11 +42,15 @@ export default function TextInput({
             <span className="text-red-500" aria-label="required">*</span>
           )}
         </label>
-        {maxLength && (
-          <span id={countId} className="text-xs text-gray-400" aria-live="polite">
-            {value.length}/{maxLength}
-          </span>
-        )}
+
+        <div className="flex items-center gap-2">
+          {extraHeader}
+          {maxLength && (
+            <span id={countId} className="text-xs text-gray-400" aria-live="polite">
+              {value.length}/{maxLength}
+            </span>
+          )}
+        </div>
       </div>
 
       {hint && (

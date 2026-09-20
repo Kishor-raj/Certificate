@@ -3,10 +3,11 @@
  *
  * Orchestrates the certificate generation workflow:
  * 1. Manage form state (recipientName, affiliation, paperTitle).
- * 2. Run validation.
- * 3. Trigger PDF generation.
- * 4. Handle download.
- * 5. Support reset/regeneration.
+ * 2. Manage font sizes state with live preview updates.
+ * 3. Run validation.
+ * 4. Trigger PDF generation with custom font sizes.
+ * 5. Handle download.
+ * 6. Support reset/regeneration.
  *
  * Layout: two-column (desktop) / single-column (mobile)
  */
@@ -16,7 +17,7 @@ import Header from './components/Header.jsx';
 import CertificateForm from './components/CertificateForm.jsx';
 import CertificatePreview from './components/CertificatePreview.jsx';
 import DownloadActions from './components/DownloadActions.jsx';
-import { INITIAL_FORM_STATE } from './config/certificateConfig.js';
+import { INITIAL_FORM_STATE, DEFAULT_FONT_SIZES } from './config/certificateConfig.js';
 import { validateCertificateForm } from './utils/validation.js';
 import { generateCertificate, downloadPdf } from './services/pdfGenerator.js';
 import { loadTemplate } from './services/templateLoader.js';
@@ -30,6 +31,7 @@ const GEN_STATE = {
 
 export default function App() {
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
+  const [fontSizes, setFontSizes] = useState(DEFAULT_FONT_SIZES);
   const [errors, setErrors] = useState({
     recipientName: null,
     affiliation: null,
@@ -64,6 +66,13 @@ export default function App() {
     });
   }, []);
 
+  const handleFontSizeChange = useCallback((field, newSize) => {
+    setFontSizes((prev) => ({
+      ...prev,
+      [field]: newSize,
+    }));
+  }, []);
+
   const handleBlur = useCallback(
     (field) => {
       setTouched((prev) => {
@@ -88,7 +97,7 @@ export default function App() {
     setErrorMessage('');
 
     try {
-      const { bytes, filename } = await generateCertificate(sanitized);
+      const { bytes, filename } = await generateCertificate(sanitized, fontSizes);
       downloadPdf(bytes, filename);
       setGenerationState(GEN_STATE.READY);
     } catch (err) {
@@ -98,10 +107,11 @@ export default function App() {
         err.message || 'An unexpected error occurred. Please check your input and try again.'
       );
     }
-  }, [formData]);
+  }, [formData, fontSizes]);
 
   const handleReset = useCallback(() => {
     setFormData(INITIAL_FORM_STATE);
+    setFontSizes(DEFAULT_FONT_SIZES);
     setErrors({ recipientName: null, affiliation: null, paperTitle: null });
     setTouched({ recipientName: false, affiliation: false, paperTitle: false });
     setGenerationState(GEN_STATE.IDLE);
@@ -123,12 +133,17 @@ export default function App() {
               aria-labelledby="form-heading"
               className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
             >
-              <h2
-                id="form-heading"
-                className="text-lg font-bold text-gray-900 mb-5 pb-3 border-b border-gray-100"
-              >
-                Certificate Details
-              </h2>
+              <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-100 flex-wrap gap-2">
+                <h2
+                  id="form-heading"
+                  className="text-lg font-bold text-gray-900"
+                >
+                  Certificate Details
+                </h2>
+                <span className="text-xs text-gray-400">
+                  Adjust font sizes with − / +
+                </span>
+              </div>
 
               <div onBlur={(e) => {
                 const name = e.target.name;
@@ -138,6 +153,8 @@ export default function App() {
                   formData={formData}
                   errors={errors}
                   onChange={handleChange}
+                  fontSizes={fontSizes}
+                  onFontSizeChange={handleFontSizeChange}
                   disabled={isGenerating}
                 />
               </div>
@@ -166,14 +183,14 @@ export default function App() {
                 Certificate Preview
               </h2>
               <span className="text-xs text-gray-400">
-                Preview updates as you type
+                Preview updates as you type & adjust size
               </span>
             </div>
 
-            <CertificatePreview formData={formData} />
+            <CertificatePreview formData={formData} fontSizes={fontSizes} />
 
             <p className="text-xs text-center text-gray-400">
-              The preview is approximate. The downloaded PDF is the authoritative output.
+              The live preview renders in real-time. The downloaded PDF matches preview geometry exactly.
             </p>
           </div>
         </div>
