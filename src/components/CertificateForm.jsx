@@ -1,7 +1,8 @@
 /**
  * CertificateForm Component
  *
- * The main certificate input form with three dynamic fields:
+ * The main certificate input form with four dynamic fields:
+ * - Certificate ID (e.g. "ICET-2026-001")
  * - Full Name (e.g. "Kishor Raj SA")
  * - Affiliation (e.g. "Government Arts and Science College Veerapandi")
  * - Paper / Presentation Title (e.g. "Deep Learning and Machine Learning")
@@ -23,6 +24,29 @@ export default function CertificateForm({
 }) {
   return (
     <div className="space-y-5">
+      {/* Certificate ID */}
+      <TextInput
+        id="certificate-id"
+        label="Certificate ID"
+        name="certificateId"
+        value={formData.certificateId}
+        onChange={(value) => onChange('certificateId', value)}
+        error={errors.certificateId}
+        disabled={disabled}
+        placeholder="e.g. ICET-2026-001"
+        maxLength={VALIDATION.certificateId.maxLength}
+        required
+        extraHeader={
+          <FontSizeControl
+            field="certificateId"
+            fontSize={fontSizes.certificateId}
+            limits={FONT_SIZE_LIMITS.certificateId}
+            onChange={onFontSizeChange}
+            disabled={disabled}
+          />
+        }
+      />
+
       {/* Full Name */}
       <TextInput
         id="recipient-name"

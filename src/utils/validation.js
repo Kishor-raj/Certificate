@@ -38,12 +38,17 @@ function validateStringField(value, fieldKey) {
 /**
  * Validate all certificate form fields.
  *
- * @param {object} formData - Raw form state: { recipientName, affiliation, paperTitle }.
+ * @param {object} formData - Raw form state: { certificateId, recipientName, affiliation, paperTitle }.
  * @returns {{ isValid: boolean, errors: object, sanitized: object }}
  */
 export function validateCertificateForm(formData) {
   const errors = {};
   const sanitized = {};
+
+  // Validate certificateId
+  const idResult = validateStringField(formData.certificateId, 'certificateId');
+  errors.certificateId = idResult.error;
+  sanitized.certificateId = idResult.value;
 
   // Validate recipientName (full titled name, e.g. "Dr. Jane Smith")
   const nameResult = validateStringField(formData.recipientName, 'recipientName');
@@ -73,8 +78,10 @@ export function validateCertificateForm(formData) {
  */
 export function isFormFilled(formData) {
   return (
+    Boolean((formData.certificateId || '').trim()) &&
     Boolean((formData.recipientName || '').trim()) &&
     Boolean((formData.affiliation || '').trim()) &&
     Boolean((formData.paperTitle || '').trim())
   );
 }
+

@@ -6,10 +6,12 @@
  */
 import { describe, it, expect } from 'vitest';
 import { validateCertificateForm, isFormFilled } from '../src/utils/validation.js';
+import { formatCertificateId } from '../src/config/certificateConfig.js';
 
 // Helper to build a complete valid form
 function validForm(overrides = {}) {
   return {
+    certificateId: 'ICET-2026-001',
     recipientName: 'Dr. Jane Smith',
     affiliation: 'University of Technology',
     paperTitle: 'Deep Learning for Cybersecurity',
@@ -21,6 +23,7 @@ describe('validateCertificateForm — valid data', () => {
   it('returns no errors for a complete valid form', () => {
     const { isValid, errors } = validateCertificateForm(validForm());
     expect(isValid).toBe(true);
+    expect(errors.certificateId).toBeNull();
     expect(errors.recipientName).toBeNull();
     expect(errors.affiliation).toBeNull();
     expect(errors.paperTitle).toBeNull();
@@ -35,10 +38,29 @@ describe('validateCertificateForm — valid data', () => {
 
   it('trims whitespace from fields', () => {
     const { sanitized } = validateCertificateForm(
-      validForm({ recipientName: '  Dr. Jane Smith  ', affiliation: '  MIT  ' })
+      validForm({
+        certificateId: '  ICET-2026-001  ',
+        recipientName: '  Dr. Jane Smith  ',
+        affiliation: '  MIT  ',
+      })
     );
+    expect(sanitized.certificateId).toBe('ICET-2026-001');
     expect(sanitized.recipientName).toBe('Dr. Jane Smith');
     expect(sanitized.affiliation).toBe('MIT');
+  });
+});
+
+describe('validateCertificateForm — empty certificateId', () => {
+  it('fails when certificateId is empty', () => {
+    const { isValid, errors } = validateCertificateForm(validForm({ certificateId: '' }));
+    expect(isValid).toBe(false);
+    expect(errors.certificateId).toBeTruthy();
+  });
+
+  it('fails when certificateId is whitespace only', () => {
+    const { isValid, errors } = validateCertificateForm(validForm({ certificateId: '    ' }));
+    expect(isValid).toBe(false);
+    expect(errors.certificateId).toBeTruthy();
   });
 });
 
@@ -73,6 +95,17 @@ describe('validateCertificateForm — empty paper title', () => {
 });
 
 describe('validateCertificateForm — max length', () => {
+  it('fails when certificateId exceeds 50 characters', () => {
+    const { isValid, errors } = validateCertificateForm(validForm({ certificateId: 'X'.repeat(51) }));
+    expect(isValid).toBe(false);
+    expect(errors.certificateId).toBeTruthy();
+  });
+
+  it('passes when certificateId is exactly 50 characters', () => {
+    const { isValid } = validateCertificateForm(validForm({ certificateId: 'X'.repeat(50) }));
+    expect(isValid).toBe(true);
+  });
+
   it('fails when recipientName exceeds 100 characters', () => {
     const { isValid, errors } = validateCertificateForm(validForm({ recipientName: 'A'.repeat(101) }));
     expect(isValid).toBe(false);
@@ -85,12 +118,12 @@ describe('validateCertificateForm — max length', () => {
   });
 
   it('fails when affiliation exceeds 150 characters', () => {
-    const { isValid } = validateCertificateForm(validForm({ affiliation: 'B'.repeat(151) }));
+    const { isValid, errors } = validateCertificateForm(validForm({ affiliation: 'B'.repeat(151) }));
     expect(isValid).toBe(false);
   });
 
   it('fails when paperTitle exceeds 250 characters', () => {
-    const { isValid } = validateCertificateForm(validForm({ paperTitle: 'C'.repeat(251) }));
+    const { isValid, errors } = validateCertificateForm(validForm({ paperTitle: 'C'.repeat(251) }));
     expect(isValid).toBe(false);
   });
 });
@@ -118,9 +151,31 @@ describe('validateCertificateForm — unicode and special characters', () => {
   });
 });
 
+describe('formatCertificateId', () => {
+  it('adds ID: prefix when missing', () => {
+    expect(formatCertificateId('101')).toBe('ID: 101');
+    expect(formatCertificateId('ICET-2026-001')).toBe('ID: ICET-2026-001');
+  });
+
+  it('preserves existing ID prefix without duplication', () => {
+    expect(formatCertificateId('ID: 101')).toBe('ID: 101');
+    expect(formatCertificateId('ID: ICET-2026-001')).toBe('ID: ICET-2026-001');
+    expect(formatCertificateId('id-101')).toBe('id-101');
+  });
+
+  it('returns empty string for empty input', () => {
+    expect(formatCertificateId('')).toBe('');
+    expect(formatCertificateId(null)).toBe('');
+  });
+});
+
 describe('isFormFilled', () => {
   it('returns true when all fields have content', () => {
     expect(isFormFilled(validForm())).toBe(true);
+  });
+
+  it('returns false when certificateId is empty', () => {
+    expect(isFormFilled(validForm({ certificateId: '' }))).toBe(false);
   });
 
   it('returns false when recipientName is empty', () => {

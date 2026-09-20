@@ -17,7 +17,7 @@
 
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { getFreshTemplateCopy } from './templateLoader.js';
-import { FIELDS, PAGE, DEFAULT_FONT_SIZES } from '../config/certificateConfig.js';
+import { FIELDS, PAGE, DEFAULT_FONT_SIZES, formatCertificateId } from '../config/certificateConfig.js';
 import { sanitizeForPdf } from '../utils/textSanitizer.js';
 import { fitTextToWidth, fitMultilineText } from '../utils/textFit.js';
 import { buildCertificateFilename } from '../utils/fileName.js';
@@ -48,10 +48,11 @@ function drawText(page, font, text, x, y, fontSize, color) {
  * Generate the certificate PDF for validated form data.
  *
  * @param {object} certData
+ * @param {string} [certData.certificateId] - Certificate ID (e.g. "ICET-2026-001")
  * @param {string} certData.recipientName - Full name (e.g. "Kishor Raj SA")
  * @param {string} certData.affiliation
  * @param {string} certData.paperTitle
- * @param {object} [fontSizes] - Optional custom font sizes { recipientName, affiliation, paperTitle }
+ * @param {object} [fontSizes] - Optional custom font sizes { certificateId, recipientName, affiliation, paperTitle }
  *
  * @returns {Promise<{ bytes: Uint8Array, filename: string }>}
  */
@@ -82,11 +83,39 @@ export async function generateCertificate(certData, fontSizes = DEFAULT_FONT_SIZ
   const measureWithFont = (t, s) => timesBold.widthOfTextAtSize(t, s);
 
   // 5. Sanitize inputs
+  const certificateId = sanitizeForPdf(certData.certificateId);
   const recipientName = sanitizeForPdf(certData.recipientName);
   const affiliation   = sanitizeForPdf(certData.affiliation);
   const paperTitle    = sanitizeForPdf(certData.paperTitle);
 
-  // ── 6. Recipient Name — centered, Times-Bold, Deep Navy Blue ─────────────
+  // ── 6. Certificate ID — top-left corner above golden line, Times-Bold, Navy Blue
+  const formattedId = formatCertificateId(certificateId);
+  if (formattedId) {
+    const idConfig = FIELDS.certificateId;
+    const preferredIdSize = fontSizes?.certificateId || idConfig.fontSize;
+
+    const idFit = fitTextToWidth(
+      formattedId,
+      idConfig.maxWidth,
+      preferredIdSize,
+      idConfig.minFontSize,
+      'Times-Bold',
+      true,
+      measureWithFont
+    );
+
+    drawText(
+      page,
+      timesBold,
+      formattedId,
+      idConfig.x,
+      idConfig.y,
+      idFit.fontSize,
+      idConfig.color
+    );
+  }
+
+  // ── 7. Recipient Name — centered, Times-Bold, Deep Navy Blue ─────────────
   const nameConfig = FIELDS.recipientName;
   const preferredNameSize = fontSizes?.recipientName || nameConfig.fontSize;
 

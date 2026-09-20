@@ -50,21 +50,28 @@ export const CERTIFICATE_TEXT_COLOR = {
  *
  * Exact calibration against sample-needed-output.pdf:
  *
- * 1. Recipient Name:
+ * 1. Certificate ID:
+ *    - Text: e.g. "ID: ICET-2026-001"
+ *    - Font: Times-Bold, 13pt
+ *    - Color: Deep Royal Navy Blue
+ *    - Alignment: Left aligned at top-left corner of golden line (X = 193)
+ *    - Y Baseline: y = 1100 (sits cleanly above the golden line at y ≈ 1088 with clear margin)
+ *
+ * 2. Recipient Name:
  *    - Text: e.g. "Kishor Raj SA"
  *    - Font: Times-Bold, 22pt
  *    - Color: Deep Royal Navy Blue
  *    - Alignment: Centered on underline (center X ≈ 412)
  *    - Y Baseline: y = 638 (sits cleanly above underline at y ≈ 625)
  *
- * 2. Affiliation:
+ * 3. Affiliation:
  *    - Text: e.g. "Government Arts and Science College Veerapandi"
  *    - Font: Times-Bold, 17pt
  *    - Color: Deep Royal Navy Blue
  *    - Alignment: Centered in available space of 'of' line (center X ≈ 418)
  *    - Y Baseline: y = 608 (sits cleanly above underline at y ≈ 595)
  *
- * 3. Paper / Presentation Title:
+ * 4. Paper / Presentation Title:
  *    - Text: e.g. "Deep Learning and Machine Learning"
  *    - Font: Times-Bold, 21pt
  *    - Color: Deep Royal Navy Blue
@@ -73,6 +80,18 @@ export const CERTIFICATE_TEXT_COLOR = {
  *    - Line Height: 30pt (matches the 30pt spacing between consecutive title underlines)
  */
 export const FIELDS = {
+  certificateId: {
+    x: 193,
+    y: 1100,
+    maxWidth: 320,
+    fontSize: 13,
+    minFontSize: 9,
+    fontFamily: FONTS.TIMES_BOLD,
+    color: CERTIFICATE_TEXT_COLOR,
+    align: 'left',
+    maxLines: 1,
+  },
+
   recipientName: {
     x: 412,
     y: 638,
@@ -114,9 +133,27 @@ export const FIELDS = {
 };
 
 /**
+ * Format the Certificate ID for display.
+ * If user inputs "101" or "ICET-2026-001", formats as "ID: 101" / "ID: ICET-2026-001".
+ * If user already included "ID:" or "id-", retains user's direct prefix without duplicating.
+ *
+ * @param {string} id
+ * @returns {string}
+ */
+export function formatCertificateId(id) {
+  if (!id) return '';
+  const trimmed = id.trim();
+  if (/^id[:\s\-\/]/i.test(trimmed) || /^id$/i.test(trimmed)) {
+    return trimmed;
+  }
+  return `ID: ${trimmed}`;
+}
+
+/**
  * Default font sizes for dynamic fields.
  */
 export const DEFAULT_FONT_SIZES = {
+  certificateId: FIELDS.certificateId.fontSize,
   recipientName: FIELDS.recipientName.fontSize,
   affiliation: FIELDS.affiliation.fontSize,
   paperTitle: FIELDS.paperTitle.fontSize,
@@ -126,6 +163,12 @@ export const DEFAULT_FONT_SIZES = {
  * Permitted font size limits for user adjustment.
  */
 export const FONT_SIZE_LIMITS = {
+  certificateId: {
+    min: 9,
+    max: 20,
+    step: 1,
+    default: FIELDS.certificateId.fontSize,
+  },
   recipientName: {
     min: 14,
     max: 32,
@@ -150,6 +193,11 @@ export const FONT_SIZE_LIMITS = {
  * Validation constraints.
  */
 export const VALIDATION = {
+  certificateId: {
+    required: true,
+    maxLength: 50,
+    label: 'Certificate ID',
+  },
   recipientName: {
     required: true,
     maxLength: 100,
@@ -171,6 +219,7 @@ export const VALIDATION = {
  * Initial application form state.
  */
 export const INITIAL_FORM_STATE = {
+  certificateId: '',
   recipientName: '',
   affiliation: '',
   paperTitle: '',

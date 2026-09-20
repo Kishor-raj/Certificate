@@ -33,11 +33,13 @@ export default function App() {
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [fontSizes, setFontSizes] = useState(DEFAULT_FONT_SIZES);
   const [errors, setErrors] = useState({
+    certificateId: null,
     recipientName: null,
     affiliation: null,
     paperTitle: null,
   });
   const [touched, setTouched] = useState({
+    certificateId: false,
     recipientName: false,
     affiliation: false,
     paperTitle: false,
@@ -87,7 +89,7 @@ export default function App() {
   );
 
   const handleGenerate = useCallback(async () => {
-    setTouched({ recipientName: true, affiliation: true, paperTitle: true });
+    setTouched({ certificateId: true, recipientName: true, affiliation: true, paperTitle: true });
     const { isValid, errors: validationErrors, sanitized } = validateCertificateForm(formData);
     setErrors(validationErrors);
 
@@ -112,8 +114,8 @@ export default function App() {
   const handleReset = useCallback(() => {
     setFormData(INITIAL_FORM_STATE);
     setFontSizes(DEFAULT_FONT_SIZES);
-    setErrors({ recipientName: null, affiliation: null, paperTitle: null });
-    setTouched({ recipientName: false, affiliation: false, paperTitle: false });
+    setErrors({ certificateId: null, recipientName: null, affiliation: null, paperTitle: null });
+    setTouched({ certificateId: false, recipientName: false, affiliation: false, paperTitle: false });
     setGenerationState(GEN_STATE.IDLE);
     setErrorMessage('');
   }, []);

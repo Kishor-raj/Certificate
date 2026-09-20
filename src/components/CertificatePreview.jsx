@@ -12,16 +12,32 @@
  */
 
 import { useMemo } from 'react';
-import { FIELDS, PAGE, DEFAULT_FONT_SIZES } from '../config/certificateConfig.js';
+import { FIELDS, PAGE, DEFAULT_FONT_SIZES, formatCertificateId } from '../config/certificateConfig.js';
 import { fitTextToWidth, fitMultilineText } from '../utils/textFit.js';
 
 export default function CertificatePreview({ formData, fontSizes = DEFAULT_FONT_SIZES }) {
-  const { recipientName, affiliation, paperTitle } = formData;
+  const { certificateId, recipientName, affiliation, paperTitle } = formData;
 
   const textColor = useMemo(() => {
     const c = FIELDS.recipientName.color;
     return `rgb(${Math.round(c.r * 255)}, ${Math.round(c.g * 255)}, ${Math.round(c.b * 255)})`;
   }, []);
+
+  // ── Certificate ID Fitting ───────────────────────────────────────────────
+  const idConfig = FIELDS.certificateId;
+  const preferredIdSize = fontSizes?.certificateId || idConfig.fontSize;
+  const formattedId = formatCertificateId(certificateId);
+  const idFit = useMemo(() => {
+    if (!formattedId) return { fontSize: preferredIdSize, fits: true };
+    return fitTextToWidth(
+      formattedId,
+      idConfig.maxWidth,
+      preferredIdSize,
+      idConfig.minFontSize,
+      '"Times New Roman", Times, serif',
+      true
+    );
+  }, [formattedId, idConfig, preferredIdSize]);
 
   // ── Recipient Name Fitting ───────────────────────────────────────────────
   const nameConfig = FIELDS.recipientName;
@@ -70,10 +86,11 @@ export default function CertificatePreview({ formData, fontSizes = DEFAULT_FONT_
     );
   }, [paperTitle, titleConfig, preferredTitleSize]);
 
-  const isEmpty = !recipientName && !affiliation && !paperTitle;
+  const isEmpty = !certificateId && !recipientName && !affiliation && !paperTitle;
 
   // SVG Y coordinates (SVG origin is top-left, PDF origin is bottom-left):
   // svg_y = PAGE.height - pdf_y
+  const idSvgY = PAGE.height - idConfig.y;
   const nameSvgY = PAGE.height - nameConfig.y;
   const affSvgY = PAGE.height - affConfig.y;
   const titleSvgY = PAGE.height - titleConfig.y;
@@ -99,6 +116,22 @@ export default function CertificatePreview({ formData, fontSizes = DEFAULT_FONT_
           height={PAGE.height}
           preserveAspectRatio="none"
         />
+
+        {/* Dynamic Text: Certificate ID — Top-left corner above golden line */}
+        {formattedId && (
+          <text
+            x={idConfig.x}
+            y={idSvgY}
+            textAnchor="start"
+            dominantBaseline="alphabetic"
+            fontFamily="'Times New Roman', Times, serif"
+            fontWeight="bold"
+            fontSize={idFit.fontSize}
+            fill={textColor}
+          >
+            {formattedId}
+          </text>
+        )}
 
         {/* Dynamic Text: Recipient Name — Centered on underline, Times-Bold */}
         {recipientName && (

@@ -13,13 +13,14 @@ import { fitTextToWidth, fitMultilineText } from '../src/utils/textFit.js';
 
 describe('Font Size Limits & Defaults Configuration', () => {
   it('defines valid defaults for all dynamic fields', () => {
+    expect(DEFAULT_FONT_SIZES.certificateId).toBe(FIELDS.certificateId.fontSize);
     expect(DEFAULT_FONT_SIZES.recipientName).toBe(FIELDS.recipientName.fontSize);
     expect(DEFAULT_FONT_SIZES.affiliation).toBe(FIELDS.affiliation.fontSize);
     expect(DEFAULT_FONT_SIZES.paperTitle).toBe(FIELDS.paperTitle.fontSize);
   });
 
   it('defines bounded limits for all dynamic fields', () => {
-    for (const field of ['recipientName', 'affiliation', 'paperTitle']) {
+    for (const field of ['certificateId', 'recipientName', 'affiliation', 'paperTitle']) {
       const limits = FONT_SIZE_LIMITS[field];
       expect(limits.min).toBeLessThan(limits.default);
       expect(limits.max).toBeGreaterThan(limits.default);
